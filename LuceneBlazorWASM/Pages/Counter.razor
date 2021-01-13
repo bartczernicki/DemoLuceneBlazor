@@ -1,16 +1,114 @@
 ﻿@page "/counter"
 
-<h1>Counter</h1>
+<h1>Lucene Search</h1>
 
-<p>Current count: @currentCount</p>
+<p>Number of Lucene Docs: @currentCount</p>
+<input type="text" @bind="@SearchString" />
+<p>Number of Search Results: @searchCount</p>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button class="btn btn-primary" @onclick="PerformSearch">Click me</button>
+<table class="table">
+    <thead>
+        <tr>
+            <th>FullPlayerName</th>
+            <th>YearsPlayed</th>
+            <th>Hits</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var player in players)
+        {
+            <tr>
+                <td>@player.FullPlayerName</td>
+                <td>@player.YearsPlayed</td>
+                <td>@player.Hits</td>
+            </tr>
+        }
+    </tbody>
+</table>
 
 @code {
-    private int currentCount = 0;
+    private List<BaseballPlayer> players = new List<BaseballPlayer>(100);
 
-    private void IncrementCount()
+    private int currentCount = 0;
+    private int searchCount = 0;
+    private string SearchString = string.Empty;
+    private DirectoryReader indexReader;
+
+    protected override void OnInitialized()
     {
-        currentCount++;
+        var assembly = typeof(LuceneBlazorWASM.Pages.Counter).Assembly;
+
+        var resources = assembly.GetManifestResourceNames();
+
+        Stream resource = assembly.GetManifestResourceStream($"LuceneBlazorWASM.LuceneIndex.LuceneIndex.zip");
+        Console.WriteLine("Retrieved Stream");
+
+        var indexPath = Path.Combine(Environment.CurrentDirectory, "LuceneIndex.zip");
+        Console.WriteLine("Retrieved Stream");
+
+        var fileStream = File.Create(indexPath);
+        Console.WriteLine("Created file stream");
+
+        resource.CopyTo(fileStream);
+        Console.WriteLine("Copied To Stream");
+
+        ZipFile.ExtractToDirectory(indexPath, Environment.CurrentDirectory, true);
+        Console.WriteLine("Extracted index to dir");
+
+        var zipDirectory = FSDirectory.Open(Environment.CurrentDirectory);
+        Console.WriteLine("Open Index Dir");
+
+        this.indexReader = DirectoryReader.Open(zipDirectory);
+
+        currentCount = indexReader.NumDocs;
+
+        base.OnInitialized();
+    }
+
+    private void PerformSearch()
+    {
+        players = new List<BaseballPlayer>();
+
+        var searcher = new IndexSearcher(indexReader);
+        Console.WriteLine("Open Index");
+
+        var analyzer = new StandardAnalyzer(Lucene.Net.Util.LuceneVersion.LUCENE_48);
+        QueryParser parser = new QueryParser(Lucene.Net.Util.LuceneVersion.LUCENE_48, "FullPlayerName", analyzer);
+        var query = parser.Parse(this.SearchString);
+
+        var queryRanged = NumericRangeQuery.NewInt32Range("IsBatterMaxYearsRecord", 1, 1, true, true);
+        BooleanQuery andQuery = new BooleanQuery();
+        andQuery.Add(query, Occur.MUST);
+        andQuery.Add(queryRanged, Occur.MUST);
+
+        var searchResults = searcher.Search(andQuery, 10000);// 20 /* top 20 */);
+        var hits = searchResults.ScoreDocs;
+
+        //var searchResults = searcher.Search(andQuery, 500);
+
+        this.searchCount = hits.Length;
+
+        foreach (var hit in hits)
+        {
+            var foundDoc = searcher.Doc(hit.Doc);
+            var yearsPlayed = foundDoc.GetField("YearsPlayed").GetSingleValue();
+
+            //if (yearsPlayed > 100)
+            //{
+            var name = foundDoc.GetField("FullPlayerName").GetStringValue();
+            var h = foundDoc.GetField("H").GetSingleValue();
+
+            var player = new BaseballPlayer { FullPlayerName = name, YearsPlayed = (int)yearsPlayed, Hits = (int)h };
+            players.Add(player);
+            //}
+
+            //var explanation = searcher.Explain(query, hit.Doc);
+
+            //Console.WriteLine("Found: " + name + " - " + hit.Score);
+            //Console.WriteLine("Explanation: " + explanation.ToString());
+
+            //var score = hit.Score;
+        }
     }
 }
