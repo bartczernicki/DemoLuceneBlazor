@@ -29,7 +29,8 @@ namespace CreateLuceneIndex
             // Skip the first header line
             var batters = lines
                         .Skip(1)
-                        .Select(v => MLBBaseballBatter.FromCsv(v));
+                        .Select(v => MLBBaseballBatter.FromCsv(v))
+                        .ToList();
 
             // LUCENE - CREATE THE INDEX
             var AppLuceneVersion = LuceneVersion.LUCENE_48;
@@ -47,14 +48,25 @@ namespace CreateLuceneIndex
 
             var writer = new IndexWriter(dir, indexConfig);
 
-            foreach(var batter in batters)
+            // Get max Years Played for each batter
+            var battersMaxYearsPlayed = from b in batters
+                    group b by b.ID into g
+                    select new MLBBaseballBatter { ID = g.Key, YearsPlayed = g.Max(b => b.YearsPlayed) };
+
+            foreach (var batter in batters)
             {
+                var isBatterMaxYearsRecord = (from batterMax in battersMaxYearsPlayed
+                                              where ((batterMax.ID == batter.ID) && (batterMax.YearsPlayed == batter.YearsPlayed))
+                                              select new { ID = batterMax.ID }).Count();
+                                     
                 Document doc = new Document
                 {
                     // StringField indexes but doesn't tokenize
                     new StringField("Id",
                         batter.ID,
                         Field.Store.YES),
+                    new StoredField("IsBatterMaxYearsRecord",
+                        isBatterMaxYearsRecord),
                     new TextField("FullPlayerName",
                         batter.FullPlayerName,
                         Field.Store.YES),
