@@ -90,8 +90,9 @@ namespace CreateLuceneIndex
                     new StringField("OnHallOfFameBallot",
                         batter.OnHallOfFameBallot.ToString(),
                         Field.Store.YES),
-                    new StoredField("YearsPlayed",
-                        batter.YearsPlayed),
+                    new SingleField("YearsPlayed",
+                        batter.YearsPlayed, Field.Store.YES),
+                    // Use StoredField to minimize index storage, since these fields won't be searched on
                     new StoredField("AB",
                         batter.AB),
                     new StoredField("R",
@@ -126,8 +127,8 @@ namespace CreateLuceneIndex
                         batter.TB),
                     new StoredField("TotalPlayerAwards",
                         batter.TotalPlayerAwards),
-                    new SingleField("LastYearPlayed",
-                        batter.LastYearPlayed, Field.Store.YES)
+                    new StoredField("LastYearPlayed",
+                        batter.LastYearPlayed)
                 };
 
                 // Console.WriteLine("Added: " + batter.ToString());

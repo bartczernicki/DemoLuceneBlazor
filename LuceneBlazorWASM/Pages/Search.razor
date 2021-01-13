@@ -1,12 +1,12 @@
-﻿@page "/counter"
+﻿@page "/search"
 
 <h1>Lucene Search</h1>
 
-<p>Number of Lucene Docs: @currentCount</p>
+<p>Number of Lucene Docs in Index: @currentCount</p>
 <input type="text" @bind="@SearchString" />
 <p>Number of Search Results: @searchCount</p>
 
-<button class="btn btn-primary" @onclick="PerformSearch">Click me</button>
+<button class="btn btn-primary" @onclick="PerformSearch">Search</button>
 <table class="table">
     <thead>
         <tr>
@@ -37,7 +37,7 @@
 
     protected override void OnInitialized()
     {
-        var assembly = typeof(LuceneBlazorWASM.Pages.Counter).Assembly;
+        var assembly = typeof(LuceneBlazorWASM.Pages.Index).Assembly;
 
         var resources = assembly.GetManifestResourceNames();
 
@@ -74,15 +74,18 @@
         Console.WriteLine("Open Index");
 
         var analyzer = new StandardAnalyzer(Lucene.Net.Util.LuceneVersion.LUCENE_48);
-        QueryParser parser = new QueryParser(Lucene.Net.Util.LuceneVersion.LUCENE_48, "FullPlayerName", analyzer);
-        var query = parser.Parse(this.SearchString);
+        //QueryParser parser = new QueryParser(Lucene.Net.Util.LuceneVersion.LUCENE_48, "FullPlayerName", analyzer);
+        //var query = parser.Parse(this.SearchString);
 
-        var queryRanged = NumericRangeQuery.NewInt32Range("IsBatterMaxYearsRecord", 1, 1, true, true);
+        var queryRangedMaxRecords = NumericRangeQuery.NewInt32Range("IsBatterMaxYearsRecord", 1, 1, true, true);
+        var queryRangedLongerYearsRecords = NumericRangeQuery.NewSingleRange("YearsPlayed", 20f, 30f, true, true);
+
         BooleanQuery andQuery = new BooleanQuery();
-        andQuery.Add(query, Occur.MUST);
-        andQuery.Add(queryRanged, Occur.MUST);
+        andQuery.Add(queryRangedMaxRecords, Occur.MUST);
+        andQuery.Add(queryRangedLongerYearsRecords, Occur.MUST);
+        //andQuery.Add(query, Occur.MUST);
 
-        var searchResults = searcher.Search(andQuery, 10000);// 20 /* top 20 */);
+        var searchResults = searcher.Search(andQuery, 300);
         var hits = searchResults.ScoreDocs;
 
         //var searchResults = searcher.Search(andQuery, 500);
