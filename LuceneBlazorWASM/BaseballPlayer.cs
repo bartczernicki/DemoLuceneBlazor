@@ -11,6 +11,6 @@ namespace LuceneBlazorWASM
 
         public int YearsPlayed { get; set; }
 
-        public int Hits { get; set; }
+        public int LastYearPlayed { get; set; }
     }
 }
