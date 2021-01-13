@@ -1,6 +1,7 @@
 ﻿using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
+using Lucene.Net.Queries;
 using Lucene.Net.QueryParsers.Classic;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
@@ -18,9 +19,21 @@ namespace CreateLuceneIndex
     {
         static void Main(string[] args)
         {
-            var indexLocation = @"D:\Data\TestLucene";
+            Console.WriteLine("LUCENE CREATE INDEX - Start");
+            
+            // Create Lucene Index Location
+            var indexLocation = Path.Combine(Environment.CurrentDirectory, "LuceneIndex");
+            var indexZipLocation = Path.Combine(Environment.CurrentDirectory, "LuceneIndexZip");
 
-            Console.WriteLine("LUCENE DEMO - Start Creating Index");
+            if (!System.IO.Directory.Exists(indexLocation))
+            {
+                System.IO.Directory.CreateDirectory(indexLocation);
+            }
+
+            if (!System.IO.Directory.Exists(indexZipLocation))
+            {
+                System.IO.Directory.CreateDirectory(indexZipLocation);
+            }
 
             var dataStream = GetBaseballData();
 
@@ -32,12 +45,11 @@ namespace CreateLuceneIndex
                         .Select(v => MLBBaseballBatter.FromCsv(v))
                         .ToList();
 
+
             // LUCENE - CREATE THE INDEX
             var AppLuceneVersion = LuceneVersion.LUCENE_48;
 
             var dir = FSDirectory.Open(indexLocation);
-
-            var test = Environment.CurrentDirectory;
 
             //create an analyzer to process the text
             var analyzer = new StandardAnalyzer(AppLuceneVersion);
@@ -50,23 +62,25 @@ namespace CreateLuceneIndex
 
             // Get max Years Played for each batter
             var battersMaxYearsPlayed = from b in batters
-                    group b by b.ID into g
-                    select new MLBBaseballBatter { ID = g.Key, YearsPlayed = g.Max(b => b.YearsPlayed) };
+                                        group b by b.ID into g
+                                        select new MLBBaseballBatter { ID = g.Key, YearsPlayed = g.Max(b => b.YearsPlayed) };
+
+            Console.WriteLine("LUCENE CREATE INDEX - Iterating Data");
 
             foreach (var batter in batters)
             {
                 var isBatterMaxYearsRecord = (from batterMax in battersMaxYearsPlayed
                                               where ((batterMax.ID == batter.ID) && (batterMax.YearsPlayed == batter.YearsPlayed))
                                               select new { ID = batterMax.ID }).Count();
-                                     
+
                 Document doc = new Document
                 {
                     // StringField indexes but doesn't tokenize
                     new StringField("Id",
                         batter.ID,
                         Field.Store.YES),
-                    new StoredField("IsBatterMaxYearsRecord",
-                        isBatterMaxYearsRecord),
+                    new Int32Field("IsBatterMaxYearsRecord",
+                        isBatterMaxYearsRecord, Field.Store.YES),
                     new TextField("FullPlayerName",
                         batter.FullPlayerName,
                         Field.Store.YES),
@@ -124,25 +138,27 @@ namespace CreateLuceneIndex
             writer.Commit();
 
             var numberDocs = writer.NumDocs;
-            Console.WriteLine("Number of Docs Written: " + numberDocs);
+            Console.WriteLine("LUCENE CREATE INDEX - Number of Docs Written: " + numberDocs);
 
             // Close the index writer
             writer.Dispose();
-            Console.WriteLine("LUCENE DEMO - Index Created");
+            Console.WriteLine("LUCENE CREATE INDEX - Index Created");
 
             // LUCENE - PACKAGE THE INDEX AS ZIP FILE
-            var packagePath = Path.Combine(@"D:\Data\LuceneIndex\", "LuceneIndex.zip");
+            var packagePath = Path.Combine(indexZipLocation, "LuceneIndex.zip");
+
+            // Delete the Zip file before proceeding
             if (File.Exists(packagePath))
             {
                 File.Delete(packagePath);
             }
 
             ZipFile.CreateFromDirectory(indexLocation, packagePath, CompressionLevel.Optimal, false);
-            Console.WriteLine("LUCENE DEMO - Index Packaged (Zip)");
+            Console.WriteLine("LUCENE CREATE INDEX - Index Packaged (Zip)");
 
             // LUCENE - TEST THE INDEX
             // Load the index from Zip file (mimic it loading)
-            Console.WriteLine("LUCENE DEMO - Text the Index from Packaged (Zip)");
+            Console.WriteLine("LUCENE CREATE INDEX - Text the Index from Packaged (Zip)");
 
             ZipFile.ExtractToDirectory(packagePath, Environment.CurrentDirectory, true);
             var zipDirectory = FSDirectory.Open(Environment.CurrentDirectory);
@@ -150,37 +166,47 @@ namespace CreateLuceneIndex
             var indexReader = DirectoryReader.Open(zipDirectory);
             var searcher = new IndexSearcher(indexReader);
 
+            // Simple Query
             QueryParser parser = new QueryParser(AppLuceneVersion,"FullPlayerName", analyzer);
-            var query = parser.Parse("Trout");
-
-            var searchResults = searcher.Search(query, 10000);// 20 /* top 20 */);
+            var query = parser.Parse("Mike");
+            var searchResults = searcher.Search(query, 500);// 20 /* top 20 */);
             var hits = searchResults.ScoreDocs;
-            foreach (var hit in hits)
+            Console.WriteLine("LUCENE CREATE INDEX - Search for 'Mike': " + hits.Length);
+
+            //foreach (var hit in hits)
+            //{
+            //    var foundDoc = searcher.Doc(hit.Doc);
+            //    var name = foundDoc.GetField("FullPlayerName").GetStringValue();
+            //    var yearsPlayed = foundDoc.GetField("YearsPlayed").GetSingleValue();
+            //    var explanation = searcher.Explain(query, hit.Doc);
+
+            //    Console.WriteLine("Found: " + name + " - " + hit.Score);
+            //    Console.WriteLine("Explanation: " + explanation.ToString());
+
+            //    var score = hit.Score;
+            //}
+
+
+            // Simple Query- With Filter
+            var queryRanged = NumericRangeQuery.NewInt32Range("IsBatterMaxYearsRecord", 1, 1, true, true);
+
+            BooleanQuery andQuery = new BooleanQuery();
+            andQuery.Add(query, Occur.MUST);
+            andQuery.Add(queryRanged, Occur.MUST);
+
+            var searchResultsWithFilter = searcher.Search(andQuery, 500); /* top 500 */;
+            var hitsWithFilter = searchResultsWithFilter.ScoreDocs;
+            Console.WriteLine("LUCENE CREATE INDEX - Search for 'Mike' with Max Years Filter: " + hitsWithFilter.Length);
+
+            foreach (var hit in hitsWithFilter)
             {
                 var foundDoc = searcher.Doc(hit.Doc);
                 var name = foundDoc.GetField("FullPlayerName").GetStringValue();
-                var yearsPlayed = foundDoc.GetField("YearsPlayed").GetSingleValue();
+                var isBatterMaxYearsRecord = foundDoc.GetField("IsBatterMaxYearsRecord").GetInt32Value();
                 var explanation = searcher.Explain(query, hit.Doc);
 
                 Console.WriteLine("Found: " + name + " - " + hit.Score);
                 Console.WriteLine("Explanation: " + explanation.ToString());
-
-                var score = hit.Score;
-            }
-
-
-
-            searcher = new IndexSearcher(indexReader);
-
-            var queryRanged = NumericRangeQuery.NewSingleRange("LastYearPlayed", 1990, 2000, true, true);
-
-
-
-            var searchResultsRanged = searcher.Search(queryRanged, 100000);// 20 /* top 20 */);
-            var hitsRanged = searchResultsRanged.ScoreDocs;
-            foreach (var hit in hitsRanged)
-            {
-                var foundDoc = searcher.Doc(hit.Doc);
 
                 var score = hit.Score;
             }
