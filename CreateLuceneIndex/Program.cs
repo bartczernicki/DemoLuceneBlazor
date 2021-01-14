@@ -65,7 +65,7 @@ namespace CreateLuceneIndex
                                         group b by b.ID into g
                                         select new MLBBaseballBatter { ID = g.Key, YearsPlayed = g.Max(b => b.YearsPlayed) };
 
-            Console.WriteLine("LUCENE CREATE INDEX - Iterating Data");
+            Console.WriteLine("LUCENE CREATE INDEX - Iterating Data for Index");
 
             foreach (var batter in batters)
             {
@@ -139,7 +139,7 @@ namespace CreateLuceneIndex
             writer.Commit();
 
             var numberDocs = writer.NumDocs;
-            Console.WriteLine("LUCENE CREATE INDEX - Number of Docs Written: " + numberDocs);
+            Console.WriteLine("LUCENE CREATE INDEX - Number of Docs Written to Index: " + numberDocs);
 
             // Close the index writer
             writer.Dispose();
@@ -169,10 +169,10 @@ namespace CreateLuceneIndex
 
             // Simple Query
             QueryParser parser = new QueryParser(AppLuceneVersion,"FullPlayerName", analyzer);
-            var query = parser.Parse("Mike");
+            var query = parser.Parse("Todd");
             var searchResults = searcher.Search(query, 500);// 20 /* top 20 */);
             var hits = searchResults.ScoreDocs;
-            Console.WriteLine("LUCENE CREATE INDEX - Search for 'Mike': " + hits.Length);
+            Console.WriteLine("LUCENE CREATE INDEX - Search for 'Todd': " + hits.Length);
 
             //foreach (var hit in hits)
             //{
@@ -197,20 +197,29 @@ namespace CreateLuceneIndex
 
             var searchResultsWithFilter = searcher.Search(andQuery, 500); /* top 500 */;
             var hitsWithFilter = searchResultsWithFilter.ScoreDocs;
-            Console.WriteLine("LUCENE CREATE INDEX - Search for 'Mike' with Max Years Filter: " + hitsWithFilter.Length);
+            Console.WriteLine("LUCENE CREATE INDEX - Search for 'Todd' with Max Years Filter: " + hitsWithFilter.Length);
 
-            foreach (var hit in hitsWithFilter)
-            {
-                var foundDoc = searcher.Doc(hit.Doc);
-                var name = foundDoc.GetField("FullPlayerName").GetStringValue();
-                var isBatterMaxYearsRecord = foundDoc.GetField("IsBatterMaxYearsRecord").GetInt32Value();
-                var explanation = searcher.Explain(query, hit.Doc);
+            //foreach (var hit in hitsWithFilter)
+            //{
+            //    var foundDoc = searcher.Doc(hit.Doc);
+            //    var name = foundDoc.GetField("FullPlayerName").GetStringValue();
+            //    var isBatterMaxYearsRecord = foundDoc.GetField("IsBatterMaxYearsRecord").GetInt32Value();
+            //    var explanation = searcher.Explain(query, hit.Doc);
 
-                Console.WriteLine("Found: " + name + " - " + hit.Score);
-                Console.WriteLine("Explanation: " + explanation.ToString());
+            //    Console.WriteLine("Found: " + name + " - " + hit.Score);
+            //    Console.WriteLine("Explanation: " + explanation.ToString());
 
-                var score = hit.Score;
-            }
+            //    var score = hit.Score;
+            //}
+
+            // Query For Id
+            var termHankAaron = new Term("Id", "aaronha01");
+            var termQuery = new TermQuery(termHankAaron);
+
+            var searchResultsTermQuery = searcher.Search(termQuery, 50); /* top 50 */;
+            var hitsTermQuery = searchResultsTermQuery.ScoreDocs;
+            Console.WriteLine("LUCENE CREATE INDEX - Search for 'Id = aaronha01': " + hitsTermQuery.Length);
+
         }
 
         public static Stream GetBaseballData()

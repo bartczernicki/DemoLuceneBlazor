@@ -178,8 +178,8 @@
         foreach (var hit in hits)
         {
             var foundDoc = searcher.Doc(hit.Doc);
-            var yearsPlayed = foundDoc.GetField("YearsPlayed").GetSingleValue();
 
+            var yearsPlayed = foundDoc.GetField("YearsPlayed").GetSingleValue();
             var name = foundDoc.GetField("FullPlayerName").GetStringValue();
             var lastYearPlayed = foundDoc.GetField("LastYearPlayed").GetSingleValue();
 
