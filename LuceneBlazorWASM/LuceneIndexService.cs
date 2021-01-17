@@ -39,6 +39,7 @@ namespace LuceneBlazorWASM
             Console.WriteLine("LuceneIndexService - Opened FSI Lucene Index Dir");
 
             this.IndexReader = DirectoryReader.Open(zipDirectory);
+            this.IndexSearcher = new IndexSearcher(this.IndexReader);
         }
 
         static LuceneIndexService()
@@ -58,6 +59,10 @@ namespace LuceneBlazorWASM
             get;
             set;
         }
-
+        public IndexSearcher IndexSearcher
+        {
+            get;
+            set;
+        }
     }
 }

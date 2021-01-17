@@ -1,5 +1,7 @@
 ﻿@page "/search"
 
+@inject LuceneIndexService luceneIndex
+
 <link href="_content/Blazored.Typeahead/blazored-typeahead.css" rel="stylesheet" />
 
 <h1>Lucene Search</h1>
@@ -75,29 +77,7 @@
 
     protected override void OnInitialized()
     {
-        //var assembly = typeof(LuceneBlazorWASM.Pages.Index).Assembly;
-
-        //// var resources = assembly.GetManifestResourceNames();
-
-        //Stream resource = assembly.GetManifestResourceStream($"LuceneBlazorWASM.LuceneIndex.LuceneIndex.zip");
-        //Console.WriteLine("Retrieved Stream");
-
-        //var indexPath = Path.Combine(Environment.CurrentDirectory, "LuceneIndex.zip");
-        //Console.WriteLine("Retrieved Stream");
-
-        //var fileStream = File.Create(indexPath);
-        //Console.WriteLine("Created file stream");
-
-        //resource.CopyTo(fileStream);
-        //Console.WriteLine("Copied To Stream");
-
-        //ZipFile.ExtractToDirectory(indexPath, Environment.CurrentDirectory, true);
-        //Console.WriteLine("Extracted index to dir");
-
-        //var zipDirectory = FSDirectory.Open(Environment.CurrentDirectory);
-        //Console.WriteLine("Open Index Dir");
-
-        this.indexReader = LuceneIndexService.Instance.IndexReader;
+        this.indexReader = luceneIndex.IndexReader;
         this.searcher = new IndexSearcher(indexReader);
 
         currentCount = indexReader.NumDocs;
