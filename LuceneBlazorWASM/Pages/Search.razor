@@ -75,34 +75,34 @@
 
     protected override void OnInitialized()
     {
-        var assembly = typeof(LuceneBlazorWASM.Pages.Index).Assembly;
+        //var assembly = typeof(LuceneBlazorWASM.Pages.Index).Assembly;
 
-        // var resources = assembly.GetManifestResourceNames();
+        //// var resources = assembly.GetManifestResourceNames();
 
-        this.SelectedBatter = new MLBBaseballBatter { FullPlayerName = "Mike Trout", YearsPlayed = 9, LastYearPlayed = 2019 };
+        //Stream resource = assembly.GetManifestResourceStream($"LuceneBlazorWASM.LuceneIndex.LuceneIndex.zip");
+        //Console.WriteLine("Retrieved Stream");
 
-        Stream resource = assembly.GetManifestResourceStream($"LuceneBlazorWASM.LuceneIndex.LuceneIndex.zip");
-        Console.WriteLine("Retrieved Stream");
+        //var indexPath = Path.Combine(Environment.CurrentDirectory, "LuceneIndex.zip");
+        //Console.WriteLine("Retrieved Stream");
 
-        var indexPath = Path.Combine(Environment.CurrentDirectory, "LuceneIndex.zip");
-        Console.WriteLine("Retrieved Stream");
+        //var fileStream = File.Create(indexPath);
+        //Console.WriteLine("Created file stream");
 
-        var fileStream = File.Create(indexPath);
-        Console.WriteLine("Created file stream");
+        //resource.CopyTo(fileStream);
+        //Console.WriteLine("Copied To Stream");
 
-        resource.CopyTo(fileStream);
-        Console.WriteLine("Copied To Stream");
+        //ZipFile.ExtractToDirectory(indexPath, Environment.CurrentDirectory, true);
+        //Console.WriteLine("Extracted index to dir");
 
-        ZipFile.ExtractToDirectory(indexPath, Environment.CurrentDirectory, true);
-        Console.WriteLine("Extracted index to dir");
+        //var zipDirectory = FSDirectory.Open(Environment.CurrentDirectory);
+        //Console.WriteLine("Open Index Dir");
 
-        var zipDirectory = FSDirectory.Open(Environment.CurrentDirectory);
-        Console.WriteLine("Open Index Dir");
-
-        this.indexReader = DirectoryReader.Open(zipDirectory);
+        this.indexReader = LuceneIndexService.Instance.IndexReader;
         this.searcher = new IndexSearcher(indexReader);
 
         currentCount = indexReader.NumDocs;
+
+        this.SelectedBatter = new MLBBaseballBatter { FullPlayerName = "Mike Trout", YearsPlayed = 9, LastYearPlayed = 2019 };
 
         base.OnInitialized();
     }
