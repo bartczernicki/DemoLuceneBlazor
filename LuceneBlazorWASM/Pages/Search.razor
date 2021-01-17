@@ -3,10 +3,7 @@
 <link href="_content/Blazored.Typeahead/blazored-typeahead.css" rel="stylesheet" />
 
 <h1>Lucene Search</h1>
-
-@*<p>Number of Lucene Docs in Index: @currentCount</p>
-<input type="text" @bind="@SearchString" />
-<p>Number of Search Results: @searchCount</p>*@
+<p>Number of Lucene Docs (player records) in Index: @currentCount</p>
 
 <BlazoredTypeahead SearchMethod="@SearchBaseballPlayers"
                    @bind-Value="@SelectedBatter"
@@ -23,34 +20,37 @@
     </NotFoundTemplate>
 </BlazoredTypeahead>
 
-@*<button class="btn btn-primary" @onclick="PerformSearch">Search</button>*@
-@*<table class="table">
+<table class="table">
     <thead>
         <tr>
             <th>FullPlayerName</th>
             <th>YearsPlayed</th>
-            <th>Hits</th>
+            <th>LastYearPlayed</th>
+            <th>H</th>
+            <th>HRs</th>
         </tr>
     </thead>
     <tbody>
         @foreach (var player in players)
         {
-            <tr>
-                <td>@player.FullPlayerName</td>
-                <td>@player.YearsPlayed</td>
-                <td>@player.Hits</td>
-            </tr>
+        <tr>
+            <td>@player.FullPlayerName</td>
+            <td>@player.YearsPlayed</td>
+            <td>@player.LastYearPlayed</td>
+            <td>@player.H</td>
+            <td>@player.HR</td>
+        </tr>
         }
     </tbody>
-</table>*@
+</table>
 
 @code {
-    private List<BaseballPlayer> players = new List<BaseballPlayer>(100);
+    private List<MLBBaseballBatter> players = new List<MLBBaseballBatter>(100);
 
     private int currentCount = 0;
     private int searchCount = 0;
     private string SearchString = string.Empty;
-    private BaseballPlayer _selectedBatter;
+    private MLBBaseballBatter _selectedBatter;
 
     private DirectoryReader indexReader;
     private IndexSearcher searcher;
@@ -60,7 +60,7 @@
     NumericRangeQuery<int> queryRangedMaxRecords = NumericRangeQuery.NewInt32Range("IsBatterMaxYearsRecord", 1, 1, true, true);
     NumericRangeQuery<float> queryRangedLongerYearsRecords = NumericRangeQuery.NewSingleRange("YearsPlayed", 21f, 30f, true, true);
 
-    public BaseballPlayer SelectedBatter
+    public MLBBaseballBatter SelectedBatter
     {
         get { return _selectedBatter; }
         set
@@ -79,7 +79,7 @@
 
         // var resources = assembly.GetManifestResourceNames();
 
-        this.SelectedBatter = new BaseballPlayer { FullPlayerName = "Mike Trout", YearsPlayed = 9, LastYearPlayed = 2019 };
+        this.SelectedBatter = new MLBBaseballBatter { FullPlayerName = "Mike Trout", YearsPlayed = 9, LastYearPlayed = 2019 };
 
         Stream resource = assembly.GetManifestResourceStream($"LuceneBlazorWASM.LuceneIndex.LuceneIndex.zip");
         Console.WriteLine("Retrieved Stream");
@@ -109,7 +109,7 @@
 
     private void PerformSearch()
     {
-        players = new List<BaseballPlayer>();
+        players = new List<MLBBaseballBatter>();
 
         Console.WriteLine("Open Index");
 
@@ -139,7 +139,7 @@
             var name = foundDoc.GetField("FullPlayerName").GetStringValue();
             var lastYearPlayed = foundDoc.GetField("LastYearPlayed").GetSingleValue();
 
-            var player = new BaseballPlayer { FullPlayerName = name, YearsPlayed = (int)yearsPlayed, LastYearPlayed = (int) lastYearPlayed };
+            var player = new MLBBaseballBatter { FullPlayerName = name, YearsPlayed = (int)yearsPlayed, LastYearPlayed = (int) lastYearPlayed };
             players.Add(player);
             //}
 
@@ -152,9 +152,9 @@
         }
     }
 
-    private async Task<IEnumerable<BaseballPlayer>> SearchBaseballPlayers(string searchText)
+    private async Task<IEnumerable<MLBBaseballBatter>> SearchBaseballPlayers(string searchText)
     {
-        var baseBallPlayers = new List<BaseballPlayer>();
+        var baseBallPlayers = new List<MLBBaseballBatter>();
 
         BooleanQuery andQuery = new BooleanQuery();
 
@@ -177,16 +177,37 @@
 
         foreach (var hit in hits)
         {
-            var foundDoc = searcher.Doc(hit.Doc);
+            var document = searcher.Doc(hit.Doc);
 
-            var yearsPlayed = foundDoc.GetField("YearsPlayed").GetSingleValue();
-            var name = foundDoc.GetField("FullPlayerName").GetStringValue();
-            var lastYearPlayed = foundDoc.GetField("LastYearPlayed").GetSingleValue();
+            var mlbBaseballBatter = new MLBBaseballBatter
+            {
+                ID = document.GetField("Id").GetStringValue(),
+                FullPlayerName = document.GetField("FullPlayerName").GetStringValue(),
+                YearsPlayed = (float)document.GetField("YearsPlayed").GetSingleValue(),
+                AB = (float)document.GetField("AB").GetSingleValue(),
+                R = (float)document.GetField("R").GetSingleValue(),
+                H = (float)document.GetField("H").GetSingleValue(),
+                Doubles = (float)document.GetField("Doubles").GetSingleValue(),
+                Triples = (float)document.GetField("Triples").GetSingleValue(),
+                HR = (float)document.GetField("HR").GetSingleValue(),
+                RBI = (float)document.GetField("RBI").GetSingleValue(),
+                SB = (float)document.GetField("SB").GetSingleValue(),
+                BattingAverage = (float)document.GetField("BattingAverage").GetSingleValue(),
+                SluggingPct = (float)document.GetField("SluggingPct").GetSingleValue(),
+                AllStarAppearances = (float)document.GetField("AllStarAppearances").GetSingleValue(),
+                MVPs = (float)document.GetField("MVPs").GetSingleValue(),
+                TripleCrowns = (float)document.GetField("TripleCrowns").GetSingleValue(),
+                GoldGloves = (float)document.GetField("GoldGloves").GetSingleValue(),
+                MajorLeaguePlayerOfTheYearAwards = (float)document.GetField("MajorLeaguePlayerOfTheYearAwards").GetSingleValue(),
+                TB = (float)document.GetField("TB").GetSingleValue(),
+                TotalPlayerAwards = (float)document.GetField("TotalPlayerAwards").GetSingleValue(),
+                LastYearPlayed = (float)document.GetField("LastYearPlayed").GetSingleValue()
+            };
 
-            var player = new BaseballPlayer { FullPlayerName = name, YearsPlayed = (int)yearsPlayed, LastYearPlayed = (int) lastYearPlayed };
-            baseBallPlayers.Add(player);
+            baseBallPlayers.Add(mlbBaseballBatter);
         }
 
-        return await Task.FromResult(baseBallPlayers.OrderByDescending(a => a.YearsPlayed).Select(a => a));
+        this.players = baseBallPlayers.OrderByDescending(a => a.YearsPlayed).Select(a => a).ToList();
+        return await Task.FromResult(this.players);
     }
 }

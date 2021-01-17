@@ -75,6 +75,9 @@ namespace CreateLuceneIndex
 
                 Document doc = new Document
                 {
+                    // Field names map to the MLBBaseballPlayer.cs class 
+                    // that is used in ML.NET models, demos etc.
+
                     // StringField indexes but doesn't tokenize
                     new StringField("Id",
                         batter.ID,
