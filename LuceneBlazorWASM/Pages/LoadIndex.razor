@@ -1,0 +1,26 @@
+﻿@page "/LoadIndex"
+
+@inject LuceneIndexService luceneIndex
+
+<h1>Load Lucene Index</h1>
+<p>Lucene Index Version: @version</p>
+<p>Number of Lucene Docs (player records) in Index: @currentCount</p>
+
+@code {
+    private DirectoryReader indexReader;
+    private IndexSearcher searcher;
+
+    private string version = string.Empty;
+    private int currentCount = 0;
+
+    protected override void OnInitialized()
+    {
+        this.indexReader = luceneIndex.IndexReader;
+        this.searcher = new IndexSearcher(indexReader);
+
+        currentCount = indexReader.NumDocs;
+        version = indexReader.Version.ToString();
+
+        base.OnInitialized();
+    }
+}
