@@ -24,4 +24,8 @@
     <PackageReference Include="Microsoft.ML" Version="1.5.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\LuceneBlazorWASM.Shared\LuceneBlazorWASM.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

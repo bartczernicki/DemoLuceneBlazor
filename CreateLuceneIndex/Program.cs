@@ -1,11 +1,11 @@
 ﻿using Lucene.Net.Analysis.Standard;
 using Lucene.Net.Documents;
 using Lucene.Net.Index;
-using Lucene.Net.Queries;
 using Lucene.Net.QueryParsers.Classic;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
 using Lucene.Net.Util;
+using LuceneBlazorWASM.Shared;
 using System;
 using System.Collections.Generic;
 using System.IO;

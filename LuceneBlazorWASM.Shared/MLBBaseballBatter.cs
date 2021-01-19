@@ -1,7 +1,7 @@
 ﻿using Microsoft.ML.Data;
 using System;
 
-namespace CreateLuceneIndex
+namespace LuceneBlazorWASM.Shared
 {
     public class MLBBaseballBatter
     {
