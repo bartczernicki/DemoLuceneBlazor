@@ -2,13 +2,35 @@
 
 @inject LuceneIndexService luceneIndex
 
-<h1>Load Lucene Index</h1>
+<h1>Load Lucene Index Metadata</h1>
 <p>Lucene Index Version: @version</p>
 <p>Number of Lucene Docs (player records) in Index: @currentCount</p>
+<p>Index field structure:</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>IndexableFieldType</th>
+            <th>NumericType</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var field in fields)
+        {
+            <tr>
+                <td>@field.Name</td>
+                <td>@field.IndexableFieldType</td>
+                <td>@field.NumericType</td>
+            </tr>
+        }
+    </tbody>
+</table>
 
 @code {
     private DirectoryReader indexReader;
     private IndexSearcher searcher;
+    private IList<IIndexableField> fields;
 
     private string version = string.Empty;
     private int currentCount = 0;
@@ -20,6 +42,10 @@
 
         currentCount = indexReader.NumDocs;
         version = indexReader.Version.ToString();
+
+        var document = this.indexReader.Document(1);
+        this.fields = document.Fields;
+
 
         base.OnInitialized();
     }
