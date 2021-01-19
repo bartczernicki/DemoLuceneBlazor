@@ -7,25 +7,28 @@
 <p>Number of Lucene Docs (player records) in Index: @currentCount</p>
 <p>Index field structure:</p>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>IndexableFieldType</th>
-            <th>NumericType</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var field in fields)
-        {
+@if (fields != null)
+{
+    <table class="table">
+        <thead>
             <tr>
-                <td>@field.Name</td>
-                <td>@field.IndexableFieldType</td>
-                <td>@field.NumericType</td>
+                <th>Field Name</th>
+                <th>IndexableFieldType</th>
+                <th>NumericType</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var field in fields)
+            {
+                <tr>
+                    <td>@field.Name</td>
+                    <td>@field.IndexableFieldType</td>
+                    <td>@field.NumericType</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 @code {
     private DirectoryReader indexReader;
