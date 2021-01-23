@@ -4,8 +4,8 @@
 
 <link href="_content/Blazored.Typeahead/blazored-typeahead.css" rel="stylesheet" />
 
-<h1>Lucene Search</h1>
-<p>Number of Lucene Docs (player records) in Index: @currentCount</p>
+<strong class="form-text">Lucene Search</strong>
+<small class="form-text text-muted"><b>Number of Lucene Docs (player records) in Index: </b>@currentCount</small>
 
 <BlazoredTypeahead SearchMethod="@SearchBaseballPlayers"
                    @bind-Value="@SelectedBatter"
@@ -35,13 +35,13 @@
     <tbody>
         @foreach (var player in players)
         {
-        <tr>
-            <td>@player.FullPlayerName</td>
-            <td>@player.YearsPlayed</td>
-            <td>@player.LastYearPlayed</td>
-            <td>@player.H</td>
-            <td>@player.HR</td>
-        </tr>
+            <tr>
+                <td>@player.FullPlayerName</td>
+                <td>@player.YearsPlayed</td>
+                <td>@player.LastYearPlayed</td>
+                <td>@player.H</td>
+                <td>@player.HR</td>
+            </tr>
         }
     </tbody>
 </table>
@@ -117,7 +117,7 @@
             var name = foundDoc.GetField("FullPlayerName").GetStringValue();
             var lastYearPlayed = foundDoc.GetField("LastYearPlayed").GetSingleValue();
 
-            var player = new MLBBaseballBatter { FullPlayerName = name, YearsPlayed = (int)yearsPlayed, LastYearPlayed = (int) lastYearPlayed };
+            var player = new MLBBaseballBatter { FullPlayerName = name, YearsPlayed = (int)yearsPlayed, LastYearPlayed = (int)lastYearPlayed };
             players.Add(player);
             //}
 
