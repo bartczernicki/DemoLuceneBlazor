@@ -77,10 +77,13 @@
 
     protected override void OnInitialized()
     {
+        // Iniitialize the Lucene
         this.indexReader = luceneIndex.IndexReader;
         this.searcher = new IndexSearcher(indexReader);
-
         currentCount = indexReader.NumDocs;
+
+        // Initialize ML.NET
+
 
         this.SelectedBatter = new MLBBaseballBatter { FullPlayerName = "Mike Trout", YearsPlayed = 9, LastYearPlayed = 2019 };
 

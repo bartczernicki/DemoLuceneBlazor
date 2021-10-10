@@ -232,7 +232,7 @@ namespace CreateLuceneIndex
             var test = assembly.GetManifestResourceNames();
             // taskkill /IM dotnet.exe /F /T 2>nul 1>nul
                                                             
-            Stream resource = assembly.GetManifestResourceStream($"CreateLuceneIndex.Data.MLBBaseballBattersHistorical.csv");
+            Stream resource = assembly.GetManifestResourceStream($"CreateLuceneIndex.Data.MLBBaseballBattersHistoricalWithGreaterThan500ABsEver.csv");
 
             return resource;
         }
