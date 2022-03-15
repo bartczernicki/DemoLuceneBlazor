@@ -43,7 +43,7 @@ namespace CreateLuceneIndex
             // Skip the first header line
             var batters = lines
                         .Skip(1)
-                        .Select(v => MLBBaseballBatter.FromCsv(v))
+                        .Select(v => MLBBaseballBatter.FromCsv(v))//.Take(45000)
                         .ToList();
 
 
@@ -68,6 +68,7 @@ namespace CreateLuceneIndex
 
             Console.WriteLine("LUCENE CREATE INDEX - Iterating Data for Index");
 
+            var documentCount = 0;
             foreach (var batter in batters)
             {
                 var isBatterMaxYearsRecord = (from batterMax in battersMaxYearsPlayed
@@ -135,8 +136,12 @@ namespace CreateLuceneIndex
                         batter.LastYearPlayed)
                 };
 
-                // Console.WriteLine("Added: " + batter.ToString());
                 writer.AddDocument(doc);
+                documentCount++;
+                if ((documentCount % 2500) == 0)
+                {
+                    Console.WriteLine("\tTotal Batters added to index: " + documentCount);
+                }
             }
 
             writer.Flush(triggerMerge: true, applyAllDeletes: false);
@@ -177,10 +182,15 @@ namespace CreateLuceneIndex
 
             // Simple Query
             QueryParser parser = new QueryParser(AppLuceneVersion,"FullPlayerName", analyzer);
-            var query = parser.Parse("Todd");
+            var query = parser.Parse("Mike");
             var searchResults = searcher.Search(query, 500);// 20 /* top 20 */);
             var hits = searchResults.ScoreDocs;
-            Console.WriteLine("LUCENE CREATE INDEX - Search for 'Todd': " + hits.Length);
+            Console.WriteLine("LUCENE CREATE INDEX - Search for 'Mike': " + hits.Length);
+
+            var queryTwo = parser.Parse("Hank Aaron");
+            var searchResultTwo = searcher.Search(queryTwo, 500);// 20 /* top 20 */);
+            var hitsTwo = searchResultTwo.ScoreDocs;
+            Console.WriteLine("LUCENE CREATE INDEX - Search for 'Hank Aaron': " + hitsTwo.Length);
 
             //foreach (var hit in hits)
             //{

@@ -6,15 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Data\MLBBaseballBattersHistorical.csv" />
     <None Remove="Data\MLBBaseballBattersHistoricalPositionPlayers.csv" />
     <None Remove="MLBBaseballBattersHistorical.csv" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Data\MLBBaseballBattersHistorical.csv">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </EmbeddedResource>
     <EmbeddedResource Include="Data\MLBBaseballBattersHistoricalPositionPlayers.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
