@@ -19,6 +19,7 @@ namespace CreateLuceneIndex
     {
         static void Main(string[] args)
         {
+            var startTime = DateTime.UtcNow;
             Console.WriteLine("LUCENE CREATE INDEX - Start");
             
             // Create Lucene Index Location
@@ -118,14 +119,14 @@ namespace CreateLuceneIndex
                         batter.SluggingPct),
                     new StoredField("AllStarAppearances",
                         batter.AllStarAppearances),
-                    new StoredField("MVPs",
-                        batter.MVPs),
-                    new StoredField("TripleCrowns",
-                        batter.TripleCrowns),
-                    new StoredField("GoldGloves",
-                        batter.GoldGloves),
-                    new StoredField("MajorLeaguePlayerOfTheYearAwards",
-                        batter.MajorLeaguePlayerOfTheYearAwards),
+                    //new StoredField("MVPs",
+                    //    batter.MVPs),
+                    //new StoredField("TripleCrowns",
+                    //    batter.TripleCrowns),
+                    //new StoredField("GoldGloves",
+                    //    batter.GoldGloves),
+                    //new StoredField("MajorLeaguePlayerOfTheYearAwards",
+                    //    batter.MajorLeaguePlayerOfTheYearAwards),
                     new StoredField("TB",
                         batter.TB),
                     new StoredField("TotalPlayerAwards",
@@ -166,6 +167,10 @@ namespace CreateLuceneIndex
 
             ZipFile.ExtractToDirectory(packagePath, Environment.CurrentDirectory, true);
             var zipDirectory = FSDirectory.Open(Environment.CurrentDirectory);
+
+            var endTime = DateTime.UtcNow;
+            TimeSpan timeDiff = endTime - startTime;
+            Console.WriteLine("LUCENE CREATE INDEX - Time (seconds) taken to create index: " + Convert.ToInt32(timeDiff.TotalSeconds));
 
             var indexReader = DirectoryReader.Open(zipDirectory);
             var searcher = new IndexSearcher(indexReader);
@@ -232,7 +237,7 @@ namespace CreateLuceneIndex
             var test = assembly.GetManifestResourceNames();
             // taskkill /IM dotnet.exe /F /T 2>nul 1>nul
                                                             
-            Stream resource = assembly.GetManifestResourceStream($"CreateLuceneIndex.Data.MLBBaseballBattersHistoricalWithGreaterThan500ABsEver.csv");
+            Stream resource = assembly.GetManifestResourceStream($"CreateLuceneIndex.Data.MLBBaseballBattersHistoricalPositionPlayers.csv");
 
             return resource;
         }

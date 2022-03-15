@@ -2,12 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <None Remove="Data\MLBBaseballBattersHistorical.csv" />
-    <None Remove="Data\MLBBaseballBattersHistoricalWithGreaterThan500ABsEver.csv" />
+    <None Remove="Data\MLBBaseballBattersHistoricalPositionPlayers.csv" />
     <None Remove="MLBBaseballBattersHistorical.csv" />
   </ItemGroup>
 
@@ -15,17 +15,17 @@
     <EmbeddedResource Include="Data\MLBBaseballBattersHistorical.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Data\MLBBaseballBattersHistoricalWithGreaterThan500ABsEver.csv">
+    <EmbeddedResource Include="Data\MLBBaseballBattersHistoricalPositionPlayers.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lucene.Net" Version="4.8.0-beta00015" />
-    <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00015" />
-    <PackageReference Include="Lucene.Net.Facet" Version="4.8.0-beta00015" />
-    <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00015" />
-    <PackageReference Include="Microsoft.ML" Version="1.6.0" />
+    <PackageReference Include="Lucene.Net" Version="4.8.0-beta00016" />
+    <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00016" />
+    <PackageReference Include="Lucene.Net.Facet" Version="4.8.0-beta00016" />
+    <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00016" />
+    <PackageReference Include="Microsoft.ML" Version="1.7.1" />
   </ItemGroup>
 
   <ItemGroup>
