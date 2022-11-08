@@ -64,9 +64,9 @@ class Program
         var writer = new IndexWriter(dir, indexConfig);
 
         // Get max Years Played for each batter
-        var battersMaxYearsPlayed = from b in batters
+        var battersMaxYearsPlayed = (from b in batters
                                     group b by b.ID into g
-                                    select new MLBBaseballBatter { ID = g.Key, YearsPlayed = g.Max(b => b.YearsPlayed) };
+                                    select new MLBBaseballBatter { ID = g.Key, YearsPlayed = g.Max(b => b.YearsPlayed) }).ToList();
 
         Console.WriteLine("LUCENE CREATE INDEX - Iterating Data for Index");
 
@@ -77,7 +77,7 @@ class Program
                                           where ((batterMax.ID == batter.ID) && (batterMax.YearsPlayed == batter.YearsPlayed))
                                           select new { ID = batterMax.ID }).Count();
 
-            Document doc = new Document
+            var doc = new Document
             {
                 // Field names map to the MLBBaseballPlayer.cs class 
                 // that is used in ML.NET models, demos etc.
