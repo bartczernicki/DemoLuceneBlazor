@@ -1,68 +1,63 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Lucene.Net;
-using Lucene;
 using System.IO;
+using System.IO.Compression;
+
 using Lucene.Net.Index;
 using Lucene.Net.Search;
 using Lucene.Net.Store;
-using System.IO.Compression;
 
-namespace LuceneBlazorWASM
+namespace LuceneBlazorWASM;
+
+public sealed class LuceneIndexService
 {
-    public sealed class LuceneIndexService
+    private static readonly LuceneIndexService instance = new LuceneIndexService();
+
+    private LuceneIndexService()
     {
-        private static readonly LuceneIndexService instance = new LuceneIndexService();
+        var assembly = typeof(LuceneBlazorWASM.LuceneIndexService).Assembly;
 
-        private LuceneIndexService()
+        Stream resource = assembly.GetManifestResourceStream($"LuceneBlazorWASM.LuceneIndex.LuceneIndex.zip");
+        Console.WriteLine("LuceneIndexService - Retrieved Stream");
+
+        var indexPath = Path.Combine(Environment.CurrentDirectory, "LuceneIndex.zip");
+        Console.WriteLine("LuceneIndexService - Retrieved Stream");
+
+        var fileStream = File.Create(indexPath);
+        Console.WriteLine("LuceneIndexService - Created file stream");
+
+        resource.CopyTo(fileStream);
+        Console.WriteLine("LuceneIndexService - Copied To Stream");
+
+        ZipFile.ExtractToDirectory(indexPath, Environment.CurrentDirectory, true);
+        Console.WriteLine("LuceneIndexService - Extracted index to dir");
+
+        var zipDirectory = FSDirectory.Open(Environment.CurrentDirectory);
+        Console.WriteLine("LuceneIndexService - Opened FSI Lucene Index Dir");
+
+        this.IndexReader = DirectoryReader.Open(zipDirectory);
+        this.IndexSearcher = new IndexSearcher(this.IndexReader);
+    }
+
+    static LuceneIndexService()
+    {
+    }
+
+    public static LuceneIndexService Instance
+    {
+        get
         {
-            var assembly = typeof(LuceneBlazorWASM.LuceneIndexService).Assembly;
-
-            Stream resource = assembly.GetManifestResourceStream($"LuceneBlazorWASM.LuceneIndex.LuceneIndex.zip");
-            Console.WriteLine("LuceneIndexService - Retrieved Stream");
-
-            var indexPath = Path.Combine(Environment.CurrentDirectory, "LuceneIndex.zip");
-            Console.WriteLine("LuceneIndexService - Retrieved Stream");
-
-            var fileStream = File.Create(indexPath);
-            Console.WriteLine("LuceneIndexService - Created file stream");
-
-            resource.CopyTo(fileStream);
-            Console.WriteLine("LuceneIndexService - Copied To Stream");
-
-            ZipFile.ExtractToDirectory(indexPath, Environment.CurrentDirectory, true);
-            Console.WriteLine("LuceneIndexService - Extracted index to dir");
-
-            var zipDirectory = FSDirectory.Open(Environment.CurrentDirectory);
-            Console.WriteLine("LuceneIndexService - Opened FSI Lucene Index Dir");
-
-            this.IndexReader = DirectoryReader.Open(zipDirectory);
-            this.IndexSearcher = new IndexSearcher(this.IndexReader);
+            return instance;
         }
+    }
 
-        static LuceneIndexService()
-        {
-        }
-
-        public static LuceneIndexService Instance
-        {
-            get
-            {
-                return instance;
-            }
-        }
-
-        public DirectoryReader IndexReader
-        {
-            get;
-            set;
-        }
-        public IndexSearcher IndexSearcher
-        {
-            get;
-            set;
-        }
+    public DirectoryReader IndexReader
+    {
+        get;
+        set;
+    }
+    public IndexSearcher IndexSearcher
+    {
+        get;
+        set;
     }
 }
